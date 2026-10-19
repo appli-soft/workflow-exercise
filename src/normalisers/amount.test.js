@@ -1,25 +1,36 @@
 const { sanitizeAmount } = require("./amount");
 
-test("converts string to amount", () => {
-  expect(sanitizeAmount("100")).toBe(100);
-});
-
-test("rounds amount to two decimal places", () => {
+test("handles ordinary numeric and string amounts", () => {
+  expect(sanitizeAmount(100)).toBe(100);
   expect(sanitizeAmount("250.567")).toBe(250.57);
 });
 
-test("removes rupee symbol and commas", () => {
+test("handles currency symbols and thousands separators", () => {
   expect(sanitizeAmount("₹1,250.50")).toBe(1250.5);
+  expect(sanitizeAmount("$2,500.75")).toBe(2500.75);
 });
 
-test("returns null for invalid text", () => {
+test("handles European number formatting", () => {
+  expect(sanitizeAmount("1.250,50")).toBe(1250.5);
+  expect(sanitizeAmount("2.500,75")).toBe(2500.75);
+});
+
+test("handles negative amounts", () => {
+  expect(sanitizeAmount("-250.50")).toBe(-250.5);
+});
+
+test("handles CR and DR suffixes", () => {
+  expect(sanitizeAmount("250.00 CR")).toBe(250);
+  expect(sanitizeAmount("250.00 DR")).toBe(-250);
+});
+
+test("returns null for invalid and empty values", () => {
   expect(sanitizeAmount("abc")).toBe(null);
-});
-
-test("returns null for empty string", () => {
   expect(sanitizeAmount("")).toBe(null);
+  expect(sanitizeAmount(null)).toBe(null);
+  expect(sanitizeAmount("₹")).toBe(null);
 });
 
-test("returns null for null input", () => {
-  expect(sanitizeAmount(null)).toBe(null);
+test("rejects values outside DECIMAL(12,2) range", () => {
+  expect(sanitizeAmount("10000000000")).toBe(null);
 });
