@@ -6,7 +6,7 @@
  * @returns {Object} - { cleanName: string, taxId: string, isValid: boolean, formatDetected: string }
  */
 function cleanVendorPayload(payload) {
-
+  // Handle missing or invalid input.
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     payload = {};
   }
@@ -41,7 +41,8 @@ function cleanVendorPayload(payload) {
   let isValid = false;
   let formatDetected = 'UNKNOWN';
 
-  const gstinPattern =/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+  const gstinPattern =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
   const einPattern = /^[0-9]{9}$/;
   const vatPattern = /^[A-Z]{2}[A-Z0-9]{8,12}$/;

@@ -1,7 +1,7 @@
+
 const { cleanVendorPayload } = require('./vendor');
 
 describe('cleanVendorPayload', () => {
-
   test('cleans vendor name and removes legal suffix', () => {
     const result = cleanVendorPayload({
       rawName: '  ACME   CORPORATION LLC  ',
@@ -32,6 +32,7 @@ describe('cleanVendorPayload', () => {
       rawTaxId: 'INVALID-ID'
     });
 
+    expect(result.cleanName).toBe('Example');
     expect(result.taxId).toBe('INVALIDID');
     expect(result.isValid).toBe(false);
     expect(result.formatDetected).toBe('UNKNOWN');
