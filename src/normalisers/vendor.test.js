@@ -1,4 +1,3 @@
-
 const { cleanVendorPayload } = require('./vendor');
 
 describe('cleanVendorPayload', () => {
