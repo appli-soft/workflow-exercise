@@ -1,62 +1,49 @@
+function standardizeDate(rawDateString) {
+  if (typeof rawDateString !== "string"){
+    return null
+  };
 
-/**
- * Task 2: Mithlesh 
- * Normalize varied input dates to strict MySQL/MariaDB DATE format (YYYY-MM-DD).
- */
+  const input = rawDateString.trim();
+  let year, month, day, match;
 
-function standardizeDate(rawDate) {
-  if (typeof rawDate !== "string" || !rawDate.trim()) {
-    return null;
-  }
+  match = input.match(/^(\d{4})[-.](\d{1,2})[-.](\d{1,2})$/);
 
-  rawDate = rawDate.trim();
-
-  let year, month, day;
-  let parts;
-
-  if (/^\d{4}[-.]\d{1,2}[-.]\d{1,2}$/.test(rawDate)) {
-    parts = rawDate.split(/[-.]/);
-    year = Number(parts[0]);
-    month = Number(parts[1]);
-    day = Number(parts[2]);
-  } else if (/^\d{1,2}[/-]\d{1,2}[/-]\d{4}$/.test(rawDate)) {
-    parts = rawDate.split(/[/-]/);
-    day = Number(parts[0]);
-    month = Number(parts[1]);
-    year = Number(parts[2]);
-  } else {
-    parts = rawDate.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
-
-    if (!parts) return null;
-
+  if (match) {
+    [, year, month, day] = match;
+  } else if ((match = input.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/))) {
+    
+    [, day, month, year] = match;
+  } else if ((match = input.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/))) {
     const months = [
-      "january", "february", "march", "april",
-      "may", "june", "july", "august",
-      "september", "october", "november", "december"
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "may",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "oct",
+      "nov",
+      "dec",
     ];
-
-    const name = parts[1].toLowerCase();
-    month = months.indexOf(name) + 1;
-
-    if (month === 0 && name.length >= 3) {
-      month = months.findIndex(m => m.startsWith(name)) + 1;
-    }
-
-    if (month === 0) return null;
-
-    day = Number(parts[2]);
-    year = Number(parts[3]);
-  }
-
-  if (year < 1000 || year > 9999 || month < 1 || month > 12) {
+    month = months.indexOf(match[1].slice(0, 3).toLowerCase()) + 1;
+    [, , day, year] = match;
+  } else {
     return null;
   }
+
+  year = Number(year);
+  month = Number(month);
+  day = Number(day);
 
   const date = new Date(0);
-  date.setUTCFullYear(year, month - 1, day);
   date.setUTCHours(0, 0, 0, 0);
+  date.setUTCFullYear(year, month - 1, day);
 
   if (
+    year < 1000 ||
     date.getUTCFullYear() !== year ||
     date.getUTCMonth() !== month - 1 ||
     date.getUTCDate() !== day
@@ -64,22 +51,17 @@ function standardizeDate(rawDate) {
     return null;
   }
 
-  const now = new Date();
-  const today = new Date(Date.UTC(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  ));
+  const today = new Date();
+  const min = new Date(
+    Date.UTC(today.getFullYear() - 5, today.getMonth(), today.getDate()),
+  );
+  const max = new Date(
+    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + 30),
+  );
 
-  const minDate = new Date(today);
-  minDate.setUTCFullYear(minDate.getUTCFullYear() - 5);
-
-  const maxDate = new Date(today);
-  maxDate.setUTCDate(maxDate.getUTCDate() + 30);
-
-  if (date < minDate || date > maxDate) {
-    return null;
-  }
+  if (date < min || date > max) {
+    return null
+  };
 
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
