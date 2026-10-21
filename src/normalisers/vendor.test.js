@@ -55,4 +55,41 @@ describe('cleanVendorPayload', () => {
       formatDetected: 'UNKNOWN'
     });
   });
+
+  // NEW TEST 1: VAT ID containing only letters should be rejected.
+  test('rejects VAT IDs containing only letters', () => {
+    const result = cleanVendorPayload({
+      rawName: 'Test Vendor',
+      rawTaxId: 'DEABCDEFGHIJ'
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.formatDetected).toBe('UNKNOWN');
+  });
+
+  // NEW TEST 2: VAT ID containing digits should be accepted.
+  test('accepts a VAT ID containing digits', () => {
+    const result = cleanVendorPayload({
+      rawName: 'Test Vendor',
+      rawTaxId: 'DE12345678'
+    });
+
+    expect(result.isValid).toBe(true);
+    expect(result.formatDetected).toBe('VAT');
+  });
+
+  // NEW TEST 3: Check apostrophes and accented letters in vendor names.
+  test('handles apostrophes and accented vendor names', () => {
+    expect(
+      cleanVendorPayload({
+        rawName: "McDonald's Corp"
+      }).cleanName
+    ).toBe("Mcdonald's Corp");
+
+    expect(
+      cleanVendorPayload({
+        rawName: 'éclair'
+      }).cleanName
+    ).toBe('Éclair');
+  });
 });
