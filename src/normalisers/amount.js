@@ -62,15 +62,6 @@ function sanitizeAmount(rawValue) {
     const integerPart = numericPart.slice(0, decimalIndex);
     const decimalPart = numericPart.slice(decimalIndex + 1);
 
-    if (
-      !/^\d{1,3}(?:,\d{3})*$|^\d+$/.test(
-        thousandsSeparator === "," ? integerPart : integerPart
-      ) ||
-      !/^\d+$/.test(decimalPart)
-    ) {
-     
-    }
-
     const escapedThousands =
       thousandsSeparator === "," ? "," : "\\.";
 
