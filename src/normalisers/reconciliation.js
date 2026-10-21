@@ -1,26 +1,31 @@
 
+const Decimal = require('decimal.js');
+
 /**
- * Convert a monetary amount to integer cents.
+ * Convert a monetary amount to integer cents using half-up rounding.
+ * Decimal arithmetic avoids common JavaScript floating-point errors.
  *
- * Adding Number.EPSILON helps correct some floating-point
- * representation errors before rounding to the nearest cent.
- *
- * @param {number} amount
- * @returns {number}
+ * Example: 1.005 becomes 101 cents ($1.01).
  */
 function toCents(amount) {
-  return Math.round((amount + Number.EPSILON) * 100);
+  return new Decimal(amount)
+    .mul(100)
+    .toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
+    .toNumber();
 }
 
 /**
- * Reconcile invoice line items against stated subtotal and total.
+ * Reconcile invoice line items against the stated subtotal and total.
+ *
+ * Each line item is rounded to cents before the subtotal is calculated.
+ * Tax is then calculated from the rounded subtotal.
  *
  * @param {Object} payload
- * @param {Array<{description: string, qty: number, unitPrice: number}>} payload.lineItems
+ * @param {Array} payload.lineItems
  * @param {number} payload.statedSubtotal
- * @param {number} payload.taxRate - e.g. 0.18 for 18%
+ * @param {number} payload.taxRate - Example: 0.18 means 18%.
  * @param {number} payload.statedTotal
- * @returns {Object}
+ * @returns {Object} Reconciliation results and calculated line items.
  */
 function reconcileInvoiceTotals(payload) {
   if (
@@ -48,9 +53,8 @@ function reconcileInvoiceTotals(payload) {
     throw new TypeError('Invalid invoice values');
   }
 
-  // Allow a discrepancy of up to two cents.
+  // A difference of up to two cents is acceptable.
   const TOLERANCE_CENTS = 2;
-
   let subtotalCents = 0;
 
   const processedItems = lineItems.map((item, index) => {
@@ -64,8 +68,9 @@ function reconcileInvoiceTotals(payload) {
       throw new TypeError(`Invalid line item at index ${index}`);
     }
 
-    // Round each line item to the nearest cent before summing.
-    const lineTotalCents = toCents(item.qty * item.unitPrice);
+    // Multiply using Decimal before rounding the result to cents.
+    const exactLineAmount = new Decimal(item.qty).mul(item.unitPrice);
+    const lineTotalCents = toCents(exactLineAmount);
 
     subtotalCents += lineTotalCents;
 
@@ -75,19 +80,18 @@ function reconcileInvoiceTotals(payload) {
     };
   });
 
-  // Calculate tax from the subtotal expressed in currency units.
-  const calculatedTotalCents = toCents(
-    (subtotalCents / 100) * (1 + taxRate)
-  );
+  // Subtotal is already in cents, so round the taxed result to whole cents.
+  const calculatedTotalCents = new Decimal(subtotalCents)
+    .mul(new Decimal(1).plus(taxRate))
+    .toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
+    .toNumber();
 
   const statedSubtotalCents = toCents(statedSubtotal);
   const statedTotalCents = toCents(statedTotal);
 
-  const subtotalDiffCents =
-    subtotalCents - statedSubtotalCents;
-
-  const totalDiffCents =
-    calculatedTotalCents - statedTotalCents;
+  // Positive discrepancy means the calculated amount is higher.
+  const subtotalDiffCents = subtotalCents - statedSubtotalCents;
+  const totalDiffCents = calculatedTotalCents - statedTotalCents;
 
   const isReconciled =
     Math.abs(subtotalDiffCents) <= TOLERANCE_CENTS &&
