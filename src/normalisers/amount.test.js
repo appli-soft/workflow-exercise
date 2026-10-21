@@ -34,3 +34,7 @@ test("returns null for invalid and empty values", () => {
 test("rejects values outside DECIMAL(12,2) range", () => {
   expect(sanitizeAmount("10000000000")).toBe(null);
 });
+
+test("rejects invalid thousands separator grouping", () => {
+  expect(sanitizeAmount("12,34.56")).toBe(null);
+});
