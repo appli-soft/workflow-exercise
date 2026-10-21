@@ -2,7 +2,6 @@
   "name": "workflow-exercise",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "jest"
   },
@@ -12,5 +11,8 @@
   "type": "commonjs",
   "devDependencies": {
     "jest": "^30.5.2"
+  },
+  "dependencies": {
+    "decimal.js": "^10.6.0"
   }
 }
