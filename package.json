@@ -1,8 +1,8 @@
+
 {
   "name": "workflow-exercise",
   "version": "1.0.0",
   "description": "",
-  "main": "reconciliation.test.js",
   "scripts": {
     "test": "jest"
   },

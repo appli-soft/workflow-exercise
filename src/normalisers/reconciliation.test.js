@@ -67,3 +67,19 @@ test('rejects an outright mismatched invoice', () => {
   expect(result.discrepancy).toBe(-118);
   expect(result.subtotalDiscrepancy).toBe(-100);
 });
+
+test('rounds 1.005 up to 1.01 for a line item', () => {
+  const result = reconcileInvoiceTotals({
+    lineItems: [
+      { description: 'Rounding test', qty: 1, unitPrice: 1.005 }
+    ],
+    statedSubtotal: 1.01,
+    taxRate: 0,
+    statedTotal: 1.01
+  });
+
+  expect(result.lineItems[0].lineTotal).toBe(1.01);
+  expect(result.calculatedSubtotal).toBe(1.01);
+  expect(result.calculatedTotal).toBe(1.01);
+  expect(result.isReconciled).toBe(true);
+});

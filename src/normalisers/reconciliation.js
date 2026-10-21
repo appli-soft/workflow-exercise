@@ -1,5 +1,18 @@
 
 /**
+ * Convert a monetary amount to integer cents.
+ *
+ * Adding Number.EPSILON helps correct some floating-point
+ * representation errors before rounding to the nearest cent.
+ *
+ * @param {number} amount
+ * @returns {number}
+ */
+function toCents(amount) {
+  return Math.round((amount + Number.EPSILON) * 100);
+}
+
+/**
  * Reconcile invoice line items against stated subtotal and total.
  *
  * @param {Object} payload
@@ -35,11 +48,9 @@ function reconcileInvoiceTotals(payload) {
     throw new TypeError('Invalid invoice values');
   }
 
-  // Tolerance: 2 cents (±0.02).
+  // Allow a discrepancy of up to two cents.
   const TOLERANCE_CENTS = 2;
 
-  // Convert amounts to integer cents to avoid floating-point
-  // errors such as 0.1 + 0.2 !== 0.3.
   let subtotalCents = 0;
 
   const processedItems = lineItems.map((item, index) => {
@@ -53,9 +64,8 @@ function reconcileInvoiceTotals(payload) {
       throw new TypeError(`Invalid line item at index ${index}`);
     }
 
-    const lineTotalCents = Math.round(
-      item.qty * item.unitPrice * 100
-    );
+    // Round each line item to the nearest cent before summing.
+    const lineTotalCents = toCents(item.qty * item.unitPrice);
 
     subtotalCents += lineTotalCents;
 
@@ -65,12 +75,13 @@ function reconcileInvoiceTotals(payload) {
     };
   });
 
-  const calculatedTotalCents = Math.round(
-    subtotalCents * (1 + taxRate)
+  // Calculate tax from the subtotal expressed in currency units.
+  const calculatedTotalCents = toCents(
+    (subtotalCents / 100) * (1 + taxRate)
   );
 
-  const statedSubtotalCents = Math.round(statedSubtotal * 100);
-  const statedTotalCents = Math.round(statedTotal * 100);
+  const statedSubtotalCents = toCents(statedSubtotal);
+  const statedTotalCents = toCents(statedTotal);
 
   const subtotalDiffCents =
     subtotalCents - statedSubtotalCents;
