@@ -1,4 +1,3 @@
-```markdown
 # Contributing to this exercise
 
 Direct pushes to the `main` branch are blocked. All code must arrive via Pull Requests.
@@ -15,8 +14,8 @@ git clone <REPO_URL>
 cd workflow-exercise
 git checkout main
 git pull origin main
-
 ```
+
 
 ### B. Create an Isolated Feature Branch
 
@@ -27,7 +26,6 @@ Never write code directly on `main`. Create a new branch named with the conventi
 ```bash
 # Example
 git checkout -b feat/<your-name>-amount-sanitizer
-
 ```
 
 ---
