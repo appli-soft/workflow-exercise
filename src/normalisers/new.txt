@@ -1,0 +1,1 @@
+amount ka data user se lena tha and uska CR and DR mein dhak ne tha curanncy ka symble dhakne hai aur agar remove karna hoga phir hara ko round of karke decimal formate mein lana hoga
